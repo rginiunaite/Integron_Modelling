@@ -1,0 +1,43 @@
+
+% Parameters
+K = 1e3; % Carrying capacity
+T = 100; % Length of simulation
+n = 3; % Number of different cassettes
+k = 3; % Size of the integron
+nStressors = 3; % Number of different stressors
+
+% Intialisation
+% 1) Initialise the cell array (seed an initial population)
+N0 = 100; % Initial number of cells
+currPopArr = repmat(struct(
+
+for cellId = 1:N0
+    currPopArr(cellId).FunctIntegrase = binornd(1,0.5); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
+    currPopArr(cellId).Gentotype = 
+end
+% 2) Generate sequence of stressors
+
+
+for t = 1
+
+
+
+patient(1).name = 'John Doe';
+patient(1).billing = 127.00;
+patient(1).test = [79, 75, 73; 180, 178, 177.5; 220, 210, 205];
+
+patient(2).name = 'Ann Lane';
+patient(2).billing = 28.50;
+patient(2).test = [68, 70, 68; 118, 118, 119; 172, 170, 169];
+
+
+patient(3).name = 'Ann Lane2';
+patient(3).billing = 28.50;
+patient(3).test = [68, 70, 68; 118, 118, 119; 172, 170, 169];
+
+
+for k=1:10
+    patientArrNew(k) = patient(1);
+end
+
+length(patientArrNew)
