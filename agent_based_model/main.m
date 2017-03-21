@@ -15,6 +15,12 @@ gamma = 0.5;    % Shape parameter determining how expression level of a resistan
 
 
 % Intialisation
+
+%Initialise reporters
+Genotypes = zeros(T+1,n+1,n+1,n+1); %array to store all the genotypes over time
+% it should have k+1 dimensions !need to be change manually if you change k
+% ! 
+
 % Initialise the cell array (seed an initial population)
 N0 = 1; % Initial number of cells
 currPopArr(K).x = -1;
@@ -22,10 +28,13 @@ currPopArr(K).x = -1;
 for cellId = 1:N0
     currPopArr(cellId).FunctIntegrase = binornd(1,0.5); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
     currPopArr(cellId).Genotype = 1:n;
+    Genotypes(1, currPopArr(cellId).Genotype(1)+1, currPopArr(cellId).Genotype(2)+1, currPopArr(cellId).Genotype(3)+1) =  Genotypes(1, currPopArr(cellId).Genotype(1)+1, currPopArr(cellId).Genotype(2)+1, currPopArr(cellId).Genotype(3)+1) + 1; 
     currPopArr(cellId).x = 1;
 end
 
 newPopArr = currPopArr;
+
+
 
 % 2) Generate sequence of stressors
 StressArr = zeros(T, nStressors);
@@ -132,7 +141,9 @@ for t = 1:T
             display('cell reshuffles')
             newPopArr(CellIdxAtNextTime-1).Genotype = newGenotype;
         end
-
+        Genotypes(t+1, newPopArr(CellIdxAtNextTime-1).Genotype(1)+1,newPopArr(CellIdxAtNextTime-1).Genotype(2)+1, newPopArr(CellIdxAtNextTime-1).Genotype(3)+1) =  Genotypes(t+1, newPopArr(CellIdxAtNextTime-1).Genotype(1)+1, newPopArr(CellIdxAtNextTime-1).Genotype(2)+1, newPopArr(CellIdxAtNextTime-1).Genotype(3)+1) + 1;
+        %register the genotype of the mother bacteria that passes on after
+        %potential shuffling
         % ---------------------------------------------------------------------
         % Replication
         rVec = rand(2,1);
@@ -141,9 +152,13 @@ for t = 1:T
             % before or after replication
             if (rVec(2) > 0.5)
                 newPopArr(CellIdxAtNextTime) = currPopArr(c);
+                Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1,newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) =  Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1, newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) + 1;
             else
                 newPopArr(CellIdxAtNextTime) = newPopArr(CellIdxAtNextTime-1);
+                Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1,newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) =  Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1, newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) + 1;
             end
+            % we registered the genotype of the daughter bacteria if she
+            % exists, whatever the scenario
             display('cell replicates');
             CellIdxAtNextTime = CellIdxAtNextTime + 1;
 
@@ -176,3 +191,6 @@ clf
 imagesc(StressArr')
 colorbar
 title('Stressors')
+
+%visualise genotypes
+plot
