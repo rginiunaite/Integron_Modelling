@@ -8,18 +8,18 @@ T = 100; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
-N0 = 10; % Initial number of cells
-rho = 0.05;     % Casette-Reshuffling rate by integrase
+N0 = 1; % Initial number of cells
+rho = 0.5;     % Casette-Reshuffling rate by integrase
 theta = 0.5;    % Rate at which the integrase reinserts exciced cassettes
 d0 = 1e-1;      % Natural death rate
 dI = 1e-3;      % Fitness cost of active integrase
-dS = 0.5;      % Death rate induced by stressor (e.g. antibiotics)
+dS = 3e-1;      % Death rate induced by stressor (e.g. antibiotics)
 beta = 0.5;     % Parameter determining how fast gene expression declines with increasing distance from promoter
 gamma = 0.5;    % Shape parameter determining how expression level of a resistance gene affects death rate
-mu = 1e-3;     % Mutation rate (from functional to non-funcitonal integrase)
+mu = 0.5;     % Mutation rate (from functional to non-funcitonal integrase)
 
 % Parameters for the Markov chain simulating the changing environment
-sigma_m = 0.4; % average fraction of time that a stressor is present
+sigma_m = 0.2; % average fraction of time that a stressor is present
 sigma_v = 0.01; % average rate of switches between presence and absence
 M = sigma_v / 2 * [1 - (1/(1-sigma_m)),1/(1-sigma_m);1/sigma_m, 1 - 1/sigma_m]; % transition matrix
 lam = zeros(1,3); % initialise rates at which stressors change
@@ -174,11 +174,11 @@ for t = 1:T
             if (rVec(2) > 0.5)
                 newPopArr(CellIdxAtNextTime) = currPopArr(c);
                 Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1,newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) =  Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1, newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) + 1;
-                Nintegron(t+1) = Nintegron(t+1) + newPopArr(CellIdxAtNextTime).FunctIntegrase;
+                Nintegron(t+1) = Nintegron(t+1) + currPopArr(CellIdxAtNextTime).FunctIntegrase;
             else
                 newPopArr(CellIdxAtNextTime) = newPopArr(CellIdxAtNextTime-1);
                 Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1,newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) =  Genotypes(t+1, newPopArr(CellIdxAtNextTime).Genotype(1)+1, newPopArr(CellIdxAtNextTime).Genotype(2)+1, newPopArr(CellIdxAtNextTime).Genotype(3)+1) + 1;
-                Nintegron(t+1) = Nintegron(t+1) + newPopArr(CellIdxAtNextTime).FunctIntegrase;
+                Nintegron(t+1) = Nintegron(t+1) + currPopArr(CellIdxAtNextTime).FunctIntegrase;
             end
             % we registered the genotype of the daughter bacteria if she
             % exists, whatever the scenario
@@ -223,8 +223,7 @@ time = 1:T+1;
 gen1 = sum(sum(Genotypes(:,2,:,:),4),3);
 gen2 = sum(sum(Genotypes(:,3,:,:),4),3);
 gen3 = sum(sum(Genotypes(:,4,:,:),4),3);
-gen4 = sum(sum(Genotypes(:,1,:,:),4),3);
-plot(time,gen1./Ncells,time,gen2./Ncells,time,gen3./Ncells,time,gen4./Ncells);
+plot(time,gen1./Ncells,time,gen2./Ncells,time,gen3./Ncells);
 
 %integrase vs total number of cells
 subplot(3,1,3)
