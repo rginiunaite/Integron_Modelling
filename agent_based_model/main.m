@@ -1,12 +1,15 @@
 
 % Parameters
 K = 1e3; % Carrying capacity
-T = 10000; % Length of simulation
+T = 100; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
-rho = 1e-3;     % Casette-Reshuffling rate by integrase
-theta = 0.5;    % Rate at which the integrase reinserts exciced cassettes
+d0 = 1e-1;      % Natural death rate
+dI = 1e-3;      % Fitness cost of active integrase
+dS = 3e-1;      % Death rate induced by stressor (e.g. antibiotics)
+beta = 0.5;     % Parameter determining how fast gene expression declines with increasing distance from promoter
+gamma = 0.5;    % Shape parameter determining how expression level of a resistance gene affects death rate
 
 % Intialisation
 % Initialise the cell array (seed an initial population)
@@ -15,102 +18,58 @@ currPopArr(K).x = -1;
 newPopArr(K).x = -1;
 
 for cellId = 1:N0
+    currPopArr(cellId).x = 1; %alive state
     currPopArr(cellId).FunctIntegrase = binornd(1,0.5); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
     currPopArr(cellId).Genotype = 1:n;
 end
 
 % 2) Generate sequence of stressors
 StressArr = zeros(T, nStressors);
-StressArr(:,1) = 0; % Stressor 1 on constantly
-
-
-sigma_m = 0.2; % average fraction of time that a stressor is present
-sigma_v = 0.01; % average rate of switches between presence and absence
-M = sigma_v / 2 * [1 - (1/(1-sigma_m)),1/(1-sigma_m);1/sigma_m, 1 - 1/sigma_m]; % transition matrix
-lam = zeros(1,3); % initialise rates at which stressors change
-lam_prob = zeros(1,3); % probabilities that 1 of the three stressors change
+StressArr(:,1) = 1; % Stressor 1 on constantly
 
 
 
-
-for t = 1 :T
-    
-    % Stressors, run each chain independently
-    
-    for i = 1:3
-       r = rand(1); 
-               if StressArr(t,i) == 0
-                  lam(i) = M(1,2);
-               else
-                  lam(i) = M(2,1); 
-               end
-               
-               if r<lam(i)
-                   StressArr(t+1,i) = mod(StressArr(t,i)+1,2); % stressor changes if probability is greater than a random number
-               else
-                   StressArr(t+1,i) = StressArr(t,i); % stressor remains the same
-               end
-    end
-    
-  
-
-
+for t = 1:T %loop through time
+    c = 1; % cell pointer
+    while currPopArr(c).x==1 % need to know until where to loop. 
+        %Could keep count on how many live cells we have, this should work
+        %as well        
     % Death check
-    % Decide how many cells die
-    
-    
-    % Mutation 
-    i = 42; % XXX Temporary -To be removed XXX
-    CellIdxAtNextTime = 1; %% Index of this bacterium in the array for the population at the next time step - to be adjusted with the rest of the code.
-    currPopArr(i).FunctIntegrase = 1; % XXX Temporary - To be removed XXX
-    % ---------------------------------------------------------------------
-    % Reshuffle
-    % Reshuffling can occur only if the integrase is active, and then it
-    % occurs with probability rho. Decide if it occurs by checking if the
-    % integrase is active and if it is active, draw a random number to
-    % choose if reshuffling occurs.
-    doesReshufflingOccur = and((currPopArr(i).FunctIntegrase == 1),(rand(1)<rho));
-    
-    if (doesReshufflingOccur==1) 
-        % Choose which cassette to excise. Assume this cassette is chosen
-        % at random so that each cassette has an equal chance of being
-        % excised. Under this assumption we can model excision by a
-        % multinomial distribution with each category having the same
-        % probability of 'success' (here 'success' corresponds to excision).
-        numberGenesInCasette = length(currPopArr(i).Gentotype);
-        excisionProbVec = ones(numberGenesInCasette,1)/numberGenesInCasette; % Vector where component i gives the probability of excising cassette i. Here we assume each cassette is equally likely to be excised.
-        cassetteIdxToExcise = find(mnrnd(1,excisionProbVec));
-        
-        % Excise the chosen cassette
-        newGenotype = exciseCassette(currPopArr(i).Gentotype, cassetteIdxToExcise, k);
-        
-        % Decide whether cassette is reinserted. Reinsertion occurs
-        % with probability theta.
-        doesReinsertionOccur = (rand(1) < theta);
-        
-        if (doesReinsertionOccur == 1)
-            excisedCassette = currPopArr(i).Gentotype(cassetteIdxToExcise); % Identity of the excised cassette
-            newGenotype = reInsertCassette(newGenotype, excisedCassette, k);
+    stressor_stress = 0;
+    for idStressor =1:nStressors %stressor induced increase in death rate
+    if StressArr(T,idStressor)~=0 %check if stressor is present
+        Etot = 0; % Expression of resistance genes for that stressor
+        for cassette=1:k % cassetteindicates cassette position)
+            if Genotype(cassette) == idStressor
+            Etot = Etot + exp(-beta*(cassette-1));
+            end
         end
-        
-        % Update the genotype of the bacterium
-        newPopArr(CellIdxAtNextTime).Genotype = newGenotype;
+        stressor_stress = stressor_stress + dS*exp(-gamma*Etot); %increase the induce stress
     end
+    end
+    integrase_stress = 0;
+    if currPopArr(c).FunctIntegrase==1 %additionnal death rate due to functioning integrase
+        integrase_stress = dI;
+    end
+    death_rate = d0 + stressor_stress + integrase_stress; 
+    death_chance = rand;
+    
+    if death_chance < death_rate
+        currPopArr(c).x=-1;
+        c = c+1;
+        continue %should make the while loop skip to the next cell
+    end
+    % Mutation 
+    
+    % Reshuffle
     
     % Replication
     
     % Collect reporters
     
     % Other stuff
-    
+    c = c+1;
+    end
 end
 
 % Visualise and analyse results
-
-% visualise stressors
-figure(1)
-clf
-%subplot(8+1,2,[1 2])
-imagesc(StressArr')
-colorbar
-title('Stressors')
