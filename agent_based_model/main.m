@@ -6,6 +6,7 @@ n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
 rho = 1e-3;     % Casette-Reshuffling rate by integrase
+theta = 0.5;    % Rate at which the integrase reinserts exciced cassettes
 
 % Intialisation
 % Initialise the cell array (seed an initial population)
@@ -31,6 +32,7 @@ for t = 1
     
     % Mutation 
     i = 42; % XXX Temporary -To be removed XXX
+    CellIdxAtNextTime = 1; %% Index of this bacterium in the array for the population at the next time step - to be adjusted with the rest of the code.
     currPopArr(i).FunctIntegrase = 1; % XXX Temporary - To be removed XXX
     % ---------------------------------------------------------------------
     % Reshuffle
@@ -48,12 +50,22 @@ for t = 1
         % probability of 'success' (here 'success' corresponds to excision).
         numberGenesInCasette = length(currPopArr(i).Gentotype);
         excisionProbVec = ones(numberGenesInCasette,1)/numberGenesInCasette; % Vector where component i gives the probability of excising cassette i. Here we assume each cassette is equally likely to be excised.
-        cassetteToExcise = find(mnrnd(1,excisionProbVec));
+        cassetteIdxToExcise = find(mnrnd(1,excisionProbVec));
         
         % Excise the chosen cassette
-        newGenotyp = exciseCassette(currPopArr(i).Gentotype, cassetteToExcise, k);
+        newGenotype = exciseCassette(currPopArr(i).Gentotype, cassetteIdxToExcise, k);
         
-        % Decide whether reinsertion occurs
+        % Decide whether cassette is reinserted. Reinsertion occurs
+        % with probability theta.
+        doesReinsertionOccur = (rand(1) < theta);
+        
+        if (doesReinsertionOccur == 1)
+            excisedCassette = currPopArr(i).Gentotype(cassetteIdxToExcise); % Identity of the excised cassette
+            newGenotype = reInsertCassette(newGenotype, excisedCassette);
+        end
+        
+        % Update the genotype of the bacterium
+        newPopArr(CellIdxAtNextTime).Genotype = newGenotype;
     end    
     
     % Replication

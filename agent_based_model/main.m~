@@ -6,6 +6,7 @@ n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
 rho = 1e-3;     % Casette-Reshuffling rate by integrase
+theta = 0.5;    % Rate at which the integrase reinserts exciced cassettes
 
 % Intialisation
 % Initialise the cell array (seed an initial population)
@@ -47,8 +48,23 @@ for t = 1
         % multinomial distribution with each category having the same
         % probability of 'success' (here 'success' corresponds to excision).
         numberGenesInCasette = length(currPopArr(i).Gentotype);
-        excisionProbVec = ones(numberGenesInCasette,1)/numberGenesInCasette; % Vector with probability 
-        cassetteToExcise = find(mnrnd(1,));
+        excisionProbVec = ones(numberGenesInCasette,1)/numberGenesInCasette; % Vector where component i gives the probability of excising cassette i. Here we assume each cassette is equally likely to be excised.
+        cassetteIdxToExcise = find(mnrnd(1,excisionProbVec));
+        
+        % Excise the chosen cassette
+        newGenotype = exciseCassette(currPopArr(i).Gentotype, cassetteIdxToExcise, k);
+        
+        % Decide whether cassette is reinserted. Reinsertion occurs
+        % with probability theta.
+        doesReinsertionOccur = (rand(1) < theta);
+        
+        if (doesReinsertionOccur == 1)
+            excisedCassette = currPopArr(i).Gentotype(cassetteIdxToExcise); % Identity of the excised cassette
+            newGenotype = reInsertCassette(newGenotype, excisedCassette);
+        end
+        
+        % Update the genotype of the bacterium
+        newPopArr(nextTimeStepIdx)
     end    
     
     % Replication
