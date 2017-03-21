@@ -1,7 +1,7 @@
 
 % Parameters
 K = 1e3; % Carrying capacity
-T = 10; % Length of simulation
+T = 3; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
@@ -12,6 +12,7 @@ dI = 1e-3;      % Fitness cost of active integrase
 dS = 3e-1;      % Death rate induced by stressor (e.g. antibiotics)
 beta = 0.5;     % Parameter determining how fast gene expression declines with increasing distance from promoter
 gamma = 0.5;    % Shape parameter determining how expression level of a resistance gene affects death rate
+mu = 0.5;     % Mutation rate (from functional to non-funcitonal integrase)
 
 
 % Intialisation
@@ -20,7 +21,7 @@ N0 = 1; % Initial number of cells
 currPopArr(K).x = -1;
 
 for cellId = 1:N0
-    currPopArr(cellId).FunctIntegrase = binornd(1,0.5); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
+    currPopArr(cellId).FunctIntegrase = binornd(1,0.9); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
     currPopArr(cellId).Genotype = 1:n;
     currPopArr(cellId).x = 1;
 end
@@ -96,7 +97,17 @@ for t = 1:T
 
         % ---------------------------------------------------------------------
         % Mutation
+        % check if it has functional integrase
+        
+        if currPopArr(c).FunctIntegrase == 1
 
+            r = rand;
+            if (r < mu)
+              display(['mutation ']);
+              newPopArr(CellIdxAtNextTime-1).FunctIntegrase = 0;
+            end
+        end
+        
         
         % ---------------------------------------------------------------------
         % Reshuffle
