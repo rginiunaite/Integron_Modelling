@@ -1,10 +1,14 @@
-
+% ========================================================================
+% Agent based model of the Engelstaedter et al 2014 integron dynamics
+% model.
+% ========================================================================
 % Parameters
 K = 1e3; % Carrying capacity
 T = 3; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
+N0 = 1; % Initial number of cells
 rho = 0.5;     % Casette-Reshuffling rate by integrase
 theta = 0.5;    % Rate at which the integrase reinserts exciced cassettes
 d0 = 1e-1;      % Natural death rate
@@ -14,34 +18,34 @@ beta = 0.5;     % Parameter determining how fast gene expression declines with i
 gamma = 0.5;    % Shape parameter determining how expression level of a resistance gene affects death rate
 mu = 0.5;     % Mutation rate (from functional to non-funcitonal integrase)
 
-
-% Intialisation
-% Initialise the cell array (seed an initial population)
-N0 = 1; % Initial number of cells
-currPopArr(K).x = -1;
-
-for cellId = 1:N0
-    currPopArr(cellId).FunctIntegrase = binornd(1,0.9); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
-    currPopArr(cellId).Genotype = 1:n;
-    currPopArr(cellId).x = 1;
-end
-
-newPopArr = currPopArr;
-
-% 2) Generate sequence of stressors
-StressArr = zeros(T, nStressors);
-StressArr(:,1) = 0; % Stressor 1 on constantly
-
-
+% Parameters for the Markov chain simulating the changing environment
 sigma_m = 0.2; % average fraction of time that a stressor is present
 sigma_v = 0.01; % average rate of switches between presence and absence
 M = sigma_v / 2 * [1 - (1/(1-sigma_m)),1/(1-sigma_m);1/sigma_m, 1 - 1/sigma_m]; % transition matrix
 lam = zeros(1,3); % initialise rates at which stressors change
 lam_prob = zeros(1,3); % probabilities that 1 of the three stressors change
 
+% ========================================================================
+% Intialisation
+% Initialise the cell arrays to hold the cells
+N = N0; % Population size
+currPopArr(K).x = -1;
 
-N = N0;
+% Seed an initial population
+for cellId = 1:N0
+    currPopArr(cellId).FunctIntegrase = binornd(1,0.9); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
+    currPopArr(cellId).Genotype = 1:n;
+    currPopArr(cellId).x = 1;
+end
 
+newPopArr = currPopArr; % Array to hold the cells at the next time step. Used in the updated process
+
+% Initialisation of variables for simulation of the stressors
+StressArr = zeros(T, nStressors);
+StressArr(:,1) = 0; % Stressor 1 on constantly
+
+% ========================================================================
+% Main loop
 for t = 1:T
     
     % Stressors, run each chain independently

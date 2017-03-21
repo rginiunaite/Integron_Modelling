@@ -1,10 +1,15 @@
-
+% ========================================================================
+% Agent based model of the Engelstaedter et al 2014 integron dynamics
+% model.
+% ========================================================================
 % Parameters
 K = 1e3; % Carrying capacity
-T = 10; % Length of simulation
+T = 3; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
+N0 = 1; % Initial number of cells
+
 rho = 0.5;     % Casette-Reshuffling rate by integrase
 theta = 0.5;    % Rate at which the integrase reinserts exciced cassettes
 d0 = 1e-1;      % Natural death rate
@@ -12,16 +17,14 @@ dI = 1e-3;      % Fitness cost of active integrase
 dS = 3e-1;      % Death rate induced by stressor (e.g. antibiotics)
 beta = 0.5;     % Parameter determining how fast gene expression declines with increasing distance from promoter
 gamma = 0.5;    % Shape parameter determining how expression level of a resistance gene affects death rate
-mu = 10e-2;     % Mutation rate (from functional to non-funcitonal integrase)
-
+mu = 0.5;     % Mutation rate (from functional to non-funcitonal integrase)
 
 % Intialisation
 % Initialise the cell array (seed an initial population)
-N0 = 1; % Initial number of cells
 currPopArr(K).x = -1;
 
 for cellId = 1:N0
-    currPopArr(cellId).FunctIntegrase = binornd(1,0.5); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
+    currPopArr(cellId).FunctIntegrase = binornd(1,0.9); % Choose if the bacterium has a functional integrase (0 = no; 1 = Yes)
     currPopArr(cellId).Genotype = 1:n;
     currPopArr(cellId).x = 1;
 end
@@ -103,7 +106,7 @@ for t = 1:T
 
             r = rand;
             if (r < mu)
-                  display(['mutation ', num2str(c)]);
+              display(['mutation ']);
               newPopArr(CellIdxAtNextTime-1).FunctIntegrase = 0;
             end
         end
