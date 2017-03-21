@@ -10,9 +10,6 @@ function newGenotype = exciseCassette(currGenotype, cassetteToExcise, k)
     % Initialise variables
     newGenotype = currGenotype; % Array for genotype after excision
 
-    % Excise the cassette
-    newGenotype(cassetteToExcise) = 0;
-
     % Excise the cassette by shifting everything that follows after it one
     % position forward. For example, if we want to remove the 1st cassette 
     % in [1 2 3] we proceed by moving [2 3] one index to the left to get 

@@ -80,6 +80,8 @@ for t = 1 :T
         numberGenesInCasette = length(currPopArr(i).Gentotype);
         excisionProbVec = ones(numberGenesInCasette,1)/numberGenesInCasette; % Vector where component i gives the probability of excising cassette i. Here we assume each cassette is equally likely to be excised.
         cassetteIdxToExcise = find(mnrnd(1,excisionProbVec));
+        display('Excised cassette')
+        pause
         
         % Excise the chosen cassette
         newGenotype = exciseCassette(currPopArr(i).Gentotype, cassetteIdxToExcise, k);
@@ -91,12 +93,13 @@ for t = 1 :T
         if (doesReinsertionOccur == 1)
             excisedCassette = currPopArr(i).Gentotype(cassetteIdxToExcise); % Identity of the excised cassette
             newGenotype = reInsertCassette(newGenotype, excisedCassette, k);
+            display('Reinserted cassette')
         end
         
         % Update the genotype of the bacterium
-        newPopArr(CellIdxAtNextTime).Genotype = newGenotype;
+        newPopArr(CellIdxAtNextTime).Genotype = newGenotype
     end
-    
+    newPopArr(CellIdxAtNextTime).Genotype
     % Replication
     
     % Collect reporters
