@@ -4,7 +4,7 @@
 % ========================================================================
 % Parameters
 K = 1e3; % Carrying capacity
-T = 100; % Length of simulation
+T = 1000; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
@@ -56,7 +56,7 @@ newPopArr = currPopArr; % Array to hold the cells at the next time step. Used in
 % Initialisation of variables for simulation of the stressors
 
 StressArr = zeros(T, nStressors);
-StressArr(:,1) = 0; % Stressor 1 on constantly
+StressArr(:,1) = 1; % Stressor 1 on constantly
 
 % ========================================================================
 % Main loop
@@ -64,20 +64,20 @@ for t = 1:T
     
     % Stressors, run each chain independently
     
-    for i = 1:nStressors
-       r = rand(1); 
-               if StressArr(t,i) == 0
-                  lam(i) = M(1,2);
-               else
-                  lam(i) = M(2,1); 
-               end
-               
-               if r<lam(i)
-                   StressArr(t+1,i) = mod(StressArr(t,i)+1,2); % stressor changes if probability is greater than a random number
-               else
-                   StressArr(t+1,i) = StressArr(t,i); % stressor remains the same
-               end
-    end
+%     for i = 1:nStressors
+%        r = rand(1); 
+%                if StressArr(t,i) == 0
+%                   lam(i) = M(1,2);
+%                else
+%                   lam(i) = M(2,1); 
+%                end
+%                
+%                if r<lam(i)
+%                    StressArr(t+1,i) = mod(StressArr(t,i)+1,2); % stressor changes if probability is greater than a random number
+%                else
+%                    StressArr(t+1,i) = StressArr(t,i); % stressor remains the same
+%                end
+%     end
     
     CellIdxAtNextTime = 1; % Index of current cell in newPopArr
     
@@ -87,7 +87,7 @@ for t = 1:T
         % Death check
         stressor_stress = 0;
         for idStressor =1:nStressors %stressor induced increase in death rate
-        if StressArr(T,idStressor)~=0 %check if stressor is present
+        if StressArr(t,idStressor)~=0 %check if stressor is present
             Etot = 0; % Expression of resistance genes for that stressor
             for cassette=1:k % cassetteindicates cassette position)
                 if currPopArr(c).Genotype(cassette) == idStressor
@@ -225,7 +225,12 @@ gen2 = sum(sum(Genotypes(:,3,:,:),4),3);
 gen3 = sum(sum(Genotypes(:,4,:,:),4),3);
 gen4 = sum(sum(Genotypes(:,1,:,:),4),3);
 plot(time,gen1./Ncells,time,gen2./Ncells,time,gen3./Ncells,time,gen4./Ncells);
+legend('Gene 1 in First Position','Gene 2 in First Position', 'Gene 3 in First Position', 'Empty Cassette')
 
 %integrase vs total number of cells
 subplot(3,1,3)
-plot(time,Nintegron,time, Ncells);
+plot(time,Nintegron,'--');
+hold on
+plot(time, Ncells);
+hold off
+legend('Number of Bacteria with Functional Integrase','Total Number of Cells')
