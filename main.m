@@ -66,7 +66,7 @@ for t = 1:T
     
 %     for i = 1:nStressors
 %        r = rand(1); 
-%                if StressArr(t,i) == 0
+%                if StressArr(t,ihttps://github.com/rginiunaite/Integron_Modelling.git) == 0
 %                   lam(i) = M(1,2);
 %                else
 %                   lam(i) = M(2,1); 
