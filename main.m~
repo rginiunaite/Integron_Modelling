@@ -80,7 +80,7 @@ for t = 1:T
     
 %     for i = 1:nStressors
 %        r = rand(1); 
-%                if StressArr(t,ihttps://github.com/rginiunaite/Integron_Modelling.git) == 0
+%                if StressArr(t,i) == 0
 %                   lam(i) = M(1,2);
 %                else
 %                   lam(i) = M(2,1); 
@@ -122,8 +122,8 @@ for t = 1:T
             %display('cell dies')
             % Check if this cell is one we track and if so record its death
             if (currPopArr(c).x > 0)
-                lifeHistoryRecordMat(currPopArr(c).x, t+1, :) = [t currPopArr(cellId).Genotype(1) currPopArr(cellId).FunctIntegrase 0 1];
-                lifeHistoryRecordMat(currPopArr(c).x, (t+2):(T+1), 2:5) = 0;
+                lifeHistoryRecordMat(currPopArr(c).x, t, :) = [t currPopArr(cellId).Genotype(1) currPopArr(cellId).FunctIntegrase 0 0];
+                lifeHistoryRecordMat(currPopArr(c).x, (t+1):T, 2:5) = 0;
             end
             continue %should make the while loop skip to the next cell
         end
@@ -143,6 +143,11 @@ for t = 1:T
               %display(['mutation ']);
               newPopArr(CellIdxAtNextTime-1).FunctIntegrase = 0;
               
+              % Check if this cell is one we track and if so record that it
+              % mutated
+              if (currPopArr(c).x > 0)
+                lifeHistoryRecordMat(currPopArr(c).x, t, 3) = currPopArr(cellId).FunctIntegrase;
+              end
             end
         end
         
@@ -202,22 +207,13 @@ for t = 1:T
             end
             % we registered the genotype of the daughter bacteria if she
             % exists, whatever the scenario
+            %display('cell replicates');
             CellIdxAtNextTime = CellIdxAtNextTime + 1;
-            
-            % Check if this cell is one we track and if so record that it
-            % replicated
-            newPopArr(CellIdxAtNextTime-1).x = -1; % Remove the x for the daughter
-            if (currPopArr(c).x > 0)
-                lifeHistoryRecordMat(currPopArr(c).x, t+1, 4) = 1;
-            end
+
         end
         
         % Collect reporters
-        % Record life history for this time step
-        if (currPopArr(c).x > 0)
-            lifeHistoryRecordMat(currPopArr(c).x, t+1, 2:3) = [newPopArr(CellIdxAtNextTime-2).Genotype(1) newPopArr(CellIdxAtNextTime-2).FunctIntegrase];
-        end
-        
+
         % Other stuff
     end
     
@@ -234,7 +230,6 @@ for t = 1:T
 %         newPopArr(c)
 %     end
 end
-lifeHistoryRecordMat(1,:,:,:)
 
 % Visualise and analyse results
 
