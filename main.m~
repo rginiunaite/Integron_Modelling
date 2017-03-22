@@ -80,7 +80,7 @@ for t = 1:T
     
 %     for i = 1:nStressors
 %        r = rand(1); 
-%                if StressArr(t,i) == 0
+%                if StressArr(t,ihttps://github.com/rginiunaite/Integron_Modelling.git) == 0
 %                   lam(i) = M(1,2);
 %                else
 %                   lam(i) = M(2,1); 
@@ -122,8 +122,8 @@ for t = 1:T
             %display('cell dies')
             % Check if this cell is one we track and if so record its death
             if (currPopArr(c).x > 0)
-                lifeHistoryRecordMat(currPopArr(c).x, t, :) = [t currPopArr(cellId).Genotype(1) currPopArr(cellId).FunctIntegrase 0 0];
-                lifeHistoryRecordMat(currPopArr(c).x, (t+1):T, 2:5) = 0;
+                lifeHistoryRecordMat(currPopArr(c).x, t+1, :) = [t currPopArr(cellId).Genotype(1) currPopArr(cellId).FunctIntegrase 0 1];
+                lifeHistoryRecordMat(currPopArr(c).x, (t+2):(T+1), 2:5) = 0;
             end
             continue %should make the while loop skip to the next cell
         end
@@ -143,11 +143,6 @@ for t = 1:T
               %display(['mutation ']);
               newPopArr(CellIdxAtNextTime-1).FunctIntegrase = 0;
               
-              % Check if this cell is one we track and if so record that it
-              % mutated
-              if (currPopArr(c).x > 0)
-                lifeHistoryRecordMat(currPopArr(c).x, t, 3) = currPopArr(cellId).FunctIntegrase;
-              end
             end
         end
         
@@ -207,13 +202,22 @@ for t = 1:T
             end
             % we registered the genotype of the daughter bacteria if she
             % exists, whatever the scenario
-            %display('cell replicates');
             CellIdxAtNextTime = CellIdxAtNextTime + 1;
-
+            
+            % Check if this cell is one we track and if so record that it
+            % replicated
+            newPopArr(CellIdxAtNextTime-1).x = -1; % Remove the x for the daughter
+            if (currPopArr(c).x > 0)
+                lifeHistoryRecordMat(currPopArr(c).x, t+1, 4) = 1;
+            end
         end
         
         % Collect reporters
-
+        % Record life history for this time step
+        if (currPopArr(c).x > 0)
+            lifeHistoryRecordMat(currPopArr(c).x, t+1, 2:3) = [newPopArr(CellIdxAtNextTime-2).Genotype(1) newPopArr(CellIdxAtNextTime-2).FunctIntegrase];
+        end
+        
         % Other stuff
     end
     
@@ -230,7 +234,6 @@ for t = 1:T
 %         newPopArr(c)
 %     end
 end
-
 % Visualise and analyse results
 
 % visualise stressors
@@ -259,3 +262,44 @@ hold on
 plot(time, Ncells);
 hold off
 legend('Number of Bacteria with Functional Integrase','Total Number of Cells')
+
+% Plot Life history
+
+
+for i = 1:(length(time))
+  
+ 
+    %check if the cell did not die
+    if life(i) == 0
+        scatter(time(i),1,'x');
+        break
+    end
+    
+    % colour the circle based on which gene is in the first position
+    hold on
+
+    % Choose colour according to which gene is in first position
+    if lifeHistoryRecordMat(cell_index,i,2) == 1
+     lineColour = 'blue';
+    elseif genFirstPos(i) == 2
+     lineColour = 'red';
+    elseif genFirstPos(i) == 3
+     lineColour = [0.9290    0.6940    0.1250];
+    else
+    lineColour = [0.4940    0.1840    0.5560];
+    end
+    
+    % Choose line type according to if the integrase is functional or not
+    if integrase(i) == 1
+        lineType = '-';
+    else
+        lineType = '--';
+    end
+    
+    plot([time(i), time(i+1)],[1,1],'color',lineColour,'lineStyle',lineType);
+    
+    % Put a dot if the cell replicated
+    if replication(i) == 1
+        scatter(time(i),1,S,'MarkerFaceColor',lineColour);
+    end
+end

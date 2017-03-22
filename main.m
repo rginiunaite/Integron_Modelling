@@ -1,10 +1,11 @@
+clear all
 % ========================================================================
 % Agent based model of the Engelstaedter et al 2014 integron dynamics
 % model.
 % ========================================================================
 % Parameters
 K = 1e3; % Carrying capacity
-T = 10; % Length of simulation
+T = 2; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
@@ -53,7 +54,7 @@ end
 newPopArr = currPopArr; % Array to hold the cells at the next time step. Used in the updated process
 
 % Initialise variables to store the life history of a cell
-nCellstoTrack = 1;
+nCellstoTrack = 10;
 lifeHistoryRecordMat = zeros(nCellstoTrack, (T+1), 5); % For each cell it will hold a matrix with rows [Time, Gene in position 1, Is the integrase functional?, Did it replicate at this time?, Is it still alive?]
 
 % Mark the cells to keep track of by putting a unique id as their 'x'
@@ -185,6 +186,13 @@ for t = 1:T
         %register the genotype of the mother bacteria that passes on after
         %potential shuffling
         Nintegron(t+1) = Nintegron(t+1) + newPopArr(CellIdxAtNextTime-1).FunctIntegrase;
+        
+        % ---------------------------------------------------------------------
+        % Record life history for this time step
+        if (currPopArr(c).x > 0)
+            lifeHistoryRecordMat(currPopArr(c).x, t+1, 2:3) = [newPopArr(CellIdxAtNextTime-1).Genotype(1) newPopArr(CellIdxAtNextTime-1).FunctIntegrase];
+        end
+        
         % ---------------------------------------------------------------------
         % Replication
         rVec = rand(2,1);
@@ -213,10 +221,6 @@ for t = 1:T
         end
         
         % Collect reporters
-        % Record life history for this time step
-        if (currPopArr(c).x > 0)
-            lifeHistoryRecordMat(currPopArr(c).x, t+1, 2:3) = [newPopArr(CellIdxAtNextTime-2).Genotype(1) newPopArr(CellIdxAtNextTime-2).FunctIntegrase];
-        end
         
         % Other stuff
     end
@@ -234,8 +238,6 @@ for t = 1:T
 %         newPopArr(c)
 %     end
 end
-lifeHistoryRecordMat(1,:,:,:)
-
 % Visualise and analyse results
 
 % visualise stressors
@@ -264,3 +266,50 @@ hold on
 plot(time, Ncells);
 hold off
 legend('Number of Bacteria with Functional Integrase','Total Number of Cells')
+
+% Plot Life history
+cell_index=1;
+figure(2);
+clf
+S = 100; % size of circle
+
+for cell_index = 1:nCellstoTrack
+    for i = 1:T
+
+
+        %check if the cell did not die
+        if lifeHistoryRecordMat(cell_index,i,5) == 0
+            scatter(lifeHistoryRecordMat(cell_index,i,1),cell_index,'xb');
+            break
+        end
+
+        % colour the circle based on which gene is in the first position
+        hold on
+
+        % Choose colour according to which gene is in first position
+        if lifeHistoryRecordMat(cell_index,i,2) == 1
+         lineColour = 'blue';
+        elseif lifeHistoryRecordMat(cell_index,i,2) == 2
+         lineColour = 'red';
+        elseif lifeHistoryRecordMat(cell_index,i,2) == 3
+         lineColour = [0.9290    0.6940    0.1250];
+        else
+        lineColour = [0.4940    0.1840    0.5560];
+        end
+
+        % Choose line type according to if the integrase is functional or not
+        if lifeHistoryRecordMat(cell_index,i,3) == 1
+            lineType = '-';
+        else
+            lineType = '--';
+        end
+
+        plot([lifeHistoryRecordMat(cell_index,i,1), lifeHistoryRecordMat(cell_index,i+1,1)],[cell_index,cell_index],'color',lineColour,'lineStyle',lineType);
+
+        % Put a dot if the cell replicated
+        if lifeHistoryRecordMat(cell_index,i,4) == 1
+            scatter(lifeHistoryRecordMat(cell_index,i,1),cell_index,S,'MarkerFaceColor',lineColour,'MarkerEdgeColor',lineColour);
+        end
+    end
+end
+hold off
