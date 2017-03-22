@@ -5,11 +5,11 @@ clear all
 % ========================================================================
 % Parameters
 K = 1e3; % Carrying capacity
-T = 2; % Length of simulation
+T = 50; % Length of simulation
 n = 3; % Number of different cassettes
 k = 3; % Size of the integron
 nStressors = 3; % Number of different stressors
-N0 = 10; % Initial number of cells
+N0 = 100; % Initial number of cells
 rho = 0.05;     % Casette-Reshuffling rate by integrase
 theta = 0.5;    % Rate at which the integrase reinserts exciced cassettes
 d0 = 1e-1;      % Natural death rate
@@ -54,7 +54,7 @@ end
 newPopArr = currPopArr; % Array to hold the cells at the next time step. Used in the updated process
 
 % Initialise variables to store the life history of a cell
-nCellstoTrack = 10;
+nCellstoTrack = 100;
 lifeHistoryRecordMat = zeros(nCellstoTrack, (T+1), 5); % For each cell it will hold a matrix with rows [Time, Gene in position 1, Is the integrase functional?, Did it replicate at this time?, Is it still alive?]
 
 % Mark the cells to keep track of by putting a unique id as their 'x'
@@ -71,7 +71,7 @@ end
 % Initialisation of variables for simulation of the stressors
 
 StressArr = zeros(T, nStressors);
-StressArr(:,1) = 1; % Stressor 1 on constantly
+% StressArr(:,1) = 1; % Stressor 1 on constantly
 
 % ========================================================================
 % Main loop
@@ -79,25 +79,25 @@ for t = 1:T
     
     % Stressors, run each chain independently
     
-%     for i = 1:nStressors
-%        r = rand(1); 
-%                if StressArr(t,ihttps://github.com/rginiunaite/Integron_Modelling.git) == 0
-%                   lam(i) = M(1,2);
-%                else
-%                   lam(i) = M(2,1); 
-%                end
-%                
-%                if r<lam(i)
-%                    StressArr(t+1,i) = mod(StressArr(t,i)+1,2); % stressor changes if probability is greater than a random number
-%                else
-%                    StressArr(t+1,i) = StressArr(t,i); % stressor remains the same
-%                end
-%     end
+    for i = 1:nStressors
+       r = rand(1); 
+               if StressArr(t,i) == 0
+                  lam(i) = M(1,2);
+               else
+                  lam(i) = M(2,1); 
+               end
+               
+               if r<lam(i)
+                   StressArr(t+1,i) = mod(StressArr(t,i)+1,2); % stressor changes if probability is greater than a random number
+               else
+                   StressArr(t+1,i) = StressArr(t,i); % stressor remains the same
+               end
+    end
     
     CellIdxAtNextTime = 1; % Index of current cell in newPopArr
     
     for c = 1 : N
-        %display(['Simulating cell ', num2str(c)]);
+%         display(['Simulating cell ', num2str(c), ' with x = ', num2str(currPopArr(c).x)]);
         % ---------------------------------------------------------------------
         % Death check
         stressor_stress = 0;
@@ -120,10 +120,10 @@ for t = 1:T
         death_chance = rand;
 
         if death_chance < death_rate
-            %display('cell dies')
+%             display('cell dies')
             % Check if this cell is one we track and if so record its death
             if (currPopArr(c).x > 0)
-                lifeHistoryRecordMat(currPopArr(c).x, t+1, :) = [t currPopArr(cellId).Genotype(1) currPopArr(cellId).FunctIntegrase 0 1];
+                lifeHistoryRecordMat(currPopArr(c).x, t+1, :) = [t currPopArr(cellId).Genotype(1) currPopArr(cellId).FunctIntegrase 0 0];
                 lifeHistoryRecordMat(currPopArr(c).x, (t+2):(T+1), 2:5) = 0;
             end
             continue %should make the while loop skip to the next cell
@@ -141,7 +141,7 @@ for t = 1:T
 
             r = rand;
             if (r < mu)
-              %display(['mutation ']);
+%               display(['mutation ']);
               newPopArr(CellIdxAtNextTime-1).FunctIntegrase = 0;
               
             end
@@ -179,7 +179,7 @@ for t = 1:T
             end
 
             % Update the genotype of the bacterium
-            %display('cell reshuffles')
+%             display('cell reshuffles')
             newPopArr(CellIdxAtNextTime-1).Genotype = newGenotype;
         end
         Genotypes(t+1, newPopArr(CellIdxAtNextTime-1).Genotype(1)+1,newPopArr(CellIdxAtNextTime-1).Genotype(2)+1, newPopArr(CellIdxAtNextTime-1).Genotype(3)+1) =  Genotypes(t+1, newPopArr(CellIdxAtNextTime-1).Genotype(1)+1, newPopArr(CellIdxAtNextTime-1).Genotype(2)+1, newPopArr(CellIdxAtNextTime-1).Genotype(3)+1) + 1;
@@ -210,6 +210,7 @@ for t = 1:T
             end
             % we registered the genotype of the daughter bacteria if she
             % exists, whatever the scenario
+%             display('cell replicates')
             CellIdxAtNextTime = CellIdxAtNextTime + 1;
             
             % Check if this cell is one we track and if so record that it
@@ -231,9 +232,9 @@ for t = 1:T
     Ncells(t+1)=N;
     
     % show all cells on screen
-    %display('----------------')
-    %display(['Time t = ', num2str(t)])
-    %display(['Population size, N = ' num2str(N)])
+    display('----------------')
+    display(['Time t = ', num2str(t+1)])
+    display(['Population size, N = ' num2str(N)])
 %     for c = 1:N
 %         newPopArr(c)
 %     end
@@ -273,6 +274,11 @@ figure(2);
 clf
 S = 100; % size of circle
 
+subplot(5,1,1) 
+imagesc(StressArr')
+title('Stressors')
+
+subplot(5,1,[2:5])
 for cell_index = 1:nCellstoTrack
     for i = 1:T
 
@@ -305,7 +311,10 @@ for cell_index = 1:nCellstoTrack
         end
 
         plot([lifeHistoryRecordMat(cell_index,i,1), lifeHistoryRecordMat(cell_index,i+1,1)],[cell_index,cell_index],'color',lineColour,'lineStyle',lineType);
-
+        axis([0,T+1,0,nCellstoTrack+1]);
+        xlabel('Time')
+        ylabel('Cell ID')
+        
         % Put a dot if the cell replicated
         if lifeHistoryRecordMat(cell_index,i,4) == 1
             scatter(lifeHistoryRecordMat(cell_index,i,1),cell_index,S,'MarkerFaceColor',lineColour,'MarkerEdgeColor',lineColour);
