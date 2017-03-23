@@ -312,8 +312,6 @@ for cell_index = 1:nCellstoTrack
 
         plot([lifeHistoryRecordMat(cell_index,i,1), lifeHistoryRecordMat(cell_index,i+1,1)],[cell_index,cell_index],'color',lineColour,'lineStyle',lineType);
         axis([0,T+1,0,nCellstoTrack+1]);
-        xlabel('Time')
-        ylabel('Cell ID')
         
         % Put a dot if the cell replicated
         if lifeHistoryRecordMat(cell_index,i,4) == 1
@@ -322,3 +320,5 @@ for cell_index = 1:nCellstoTrack
     end
 end
 hold off
+xlabel('Time')
+ylabel('Cell ID')
